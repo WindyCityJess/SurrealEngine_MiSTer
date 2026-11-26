@@ -50,7 +50,9 @@ Ideas, most promising first. None is measured yet.
 
 - [ ] Sound goes through the engine's own mixer (`AudioPlayerDevice`) to SDL: not heard yet. Upstream's default device is OpenAL, which this build leaves out
 - [ ] Music: tracker modules through libopenmpt on the ARM; may be a large share of the CPU
-- [ ] Gamepad: buttons and sticks are not mapped to the engine's `IK_Joy*` keys yet. Keyboard and mouse arrive as SDL events
+- [ ] Gamepad: mapped (`MiSTer/MisterGamepad.cpp`, defaults for an 8BitDo Pro style pad) but not tried with a pad or the game; stick speeds are set from the keyboard's values and will need tuning
+- [ ] Gamepad in the menus: UT's menus are driven by the mouse pointer, which the pad does not move. A stick as the pointer and Fire as the click, while a menu is up
+- [ ] Gamepad bindings are fixed in the port; `User.ini`'s joystick lines are ignored
 - [ ] `MiSTer_PickGame()`: one game only (the folder the launch script names). Unreal Gold would be a second entry of `package/games.txt`
 
 ### Repository

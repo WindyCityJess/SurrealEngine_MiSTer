@@ -51,7 +51,7 @@ savelog() {
 # For the hybrid core drivers in the binary: which core to attach to and its
 # default button mapping ("jn" in core/SurrealEngine.sv)
 export MISTER_HYBRID_CORE="$CORE"
-export MISTER_HYBRID_JN="A,B,X,Y,L,R,Select,Start"
+export MISTER_HYBRID_JN="R,L,B,A,X,Y,Select,Start"
 # Everything the game writes stays in its folder
 export HOME="$DATADIR"
 export XDG_CONFIG_HOME="$DATADIR/config"

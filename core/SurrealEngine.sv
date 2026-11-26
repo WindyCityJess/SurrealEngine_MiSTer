@@ -112,7 +112,7 @@ localparam CONF_STR = {
 	// of the SDL joystick, the launcher repeats "jn" as MISTER_HYBRID_JN
 	// (package/games/SurrealEngine/danik_hybrid_launch.sh).
 	"J1,Fire,Alt Fire,Jump,Duck,Next Weapon,Prev Weapon,Scores,Menu;",
-	"jn,A,B,X,Y,L,R,Select,Start;",
+	"jn,R,L,B,A,X,Y,Select,Start;",
 	// Main_MiSTer's info box shows text n when hybrid_host asks for it
 	// (`info`): 1..13 the MT32-pi's synth, 14..16 the SoundFont's errors
 	// (MH_INFO_*), 17 and 18 the diagnostic report's, then empty ones up to

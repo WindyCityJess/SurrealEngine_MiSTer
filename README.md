@@ -14,7 +14,7 @@ Surreal Engine draws through Vulkan, OpenGL or Direct3D, and the MiSTer's ARM ha
 
 - **danik_hybrid_ports**, the launcher of the Hybrid Core Framework: run it once from the MiSTer's `Scripts` menu. Without it the core says "Game not running".
 - **Game data**, which is not included: Unreal Tournament, version 436 (the version Surreal Engine runs best; 469c launches, later versions do not).
-- A mouse and a keyboard, which the game was designed for. Gamepads are not mapped yet.
+- **Recommended:** a gamepad with two analog sticks, like an 8BitDo Pro, or a mouse and a keyboard. The game's menus need the mouse: the gamepad does not move their pointer yet.
 
 ## Installation
 
@@ -39,7 +39,24 @@ The game's log is in `/media/fat/logs/dnk/SurrealEngine/surrealengine.log`.
 
 ## Controls
 
-Keyboard and mouse, as the game's own settings have them (`System/User.ini`). The gamepad's buttons are named in the OSD (*Fire, Alt Fire, Jump, Duck, Next Weapon, Prev Weapon, Scores, Menu*) but do not reach the engine's key bindings yet.
+- **Keyboard and mouse:** as the game's own settings have them (`System/User.ini`).
+- **Gamepad** (default mapping, laid out for an 8BitDo Pro; not yet tried with a pad or the game):
+
+| Button | Action |
+|---|---|
+| Left stick | Walk and strafe |
+| Right stick | Turn and look up or down |
+| D-pad | The cursor keys: the game's menus, and whatever the game binds them to |
+| R and R2 | Fire |
+| L and L2 | Alt Fire |
+| B (Xbox A / PlayStation Cross) | Jump |
+| A (Xbox B / PlayStation Circle) | Duck |
+| X (Xbox Y / PlayStation Triangle) | Next Weapon |
+| Y (Xbox X / PlayStation Square) | Prev Weapon |
+| Select | Scores |
+| Start | Menu (Escape) |
+
+Change the buttons in the OSD under *Define SurrealEngine buttons*. The MiSTer menu's *Menu OK* / *Menu Back* buttons are Enter and Escape in the game's menus. The gamepad's actions are bound by the port itself, not by `User.ini`.
 
 ## Building
 
