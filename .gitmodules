@@ -2,3 +2,7 @@
 	path = hybrid
 	url = https://github.com/ItsDanik/Hybrid_MiSTer.git
 	branch = main
+[submodule "surrealengine"]
+	path = surrealengine
+	url = https://github.com/WindyCityJess/SurrealEngine_MiSTer.git
+	branch = mister
