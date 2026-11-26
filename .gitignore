@@ -1,0 +1,18 @@
+# Game data is copyrighted and never committed
+*.unr
+*.utx
+*.uax
+*.umx
+*.u
+/System/
+/Maps/
+/Textures/
+/Sounds/
+/Music/
+
+# Logs of builds
+*.log
+
+# Build outputs
+/build/
+/dist/
