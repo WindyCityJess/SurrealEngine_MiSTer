@@ -13,6 +13,37 @@
 #include <arm_neon.h>
 #endif
 
+#if defined(USE_NEON) && !defined(__aarch64__)
+// 32-bit ARM (the MiSTer's Cortex-A9): NEON there has no square root, no
+// division, no maximum across a vector and no fused multiply-add. The same
+// results a lane at a time, or with a multiply and an add.
+#include <cmath>
+static inline uint32_t armv7_vmaxvq_u32(uint32x4_t v)
+{
+	uint32x2_t m = vmax_u32(vget_low_u32(v), vget_high_u32(v));
+	return vget_lane_u32(vpmax_u32(m, m), 0);
+}
+static inline float32x4_t armv7_vsqrtq_f32(float32x4_t v)
+{
+	float t[4];
+	vst1q_f32(t, v);
+	for (int i = 0; i < 4; i++) t[i] = std::sqrt(t[i]);
+	return vld1q_f32(t);
+}
+static inline float32x4_t armv7_vdivq_f32(float32x4_t a, float32x4_t b)
+{
+	float x[4], y[4];
+	vst1q_f32(x, a);
+	vst1q_f32(y, b);
+	for (int i = 0; i < 4; i++) x[i] /= y[i];
+	return vld1q_f32(x);
+}
+#define vmaxvq_u32 armv7_vmaxvq_u32
+#define vsqrtq_f32 armv7_vsqrtq_f32
+#define vdivq_f32 armv7_vdivq_f32
+#define vfmaq_f32(a, b, c) vmlaq_f32((a), (b), (c))
+#endif
+
 LightEffect::EffectFunc LightEffect::Effects[LE_Unused + 1] =
 {
 	&LightEffect::NoneEffect, // LE_None
