@@ -3,7 +3,16 @@
 #include "AudioPlayer.h"
 #include "../AudioSource.h"
 
-#ifdef WIN32
+#ifdef MISTER_HYBRID
+
+#include "SDLAudioPlayer.h"
+
+std::unique_ptr<AudioPlayer> AudioPlayer::Create(std::unique_ptr<AudioSource> source)
+{
+	return std::make_unique<SDLAudioPlayer>(std::move(source));
+}
+
+#elif defined(WIN32)
 
 #include "WindowsAudioPlayer.h"
 

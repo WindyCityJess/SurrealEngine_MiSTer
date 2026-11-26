@@ -2,8 +2,15 @@ cmake_minimum_required(VERSION 3.15)
 
 project(SurrealEngine)
 
+# MiSTer hybrid core (https://github.com/ItsDanik/Hybrid_MiSTer): the engine on
+# the MiSTer's ARM, which has no GPU. Software render device, SDL2 for the
+# window, sound and input, nothing else from the system.
+option(MISTER_HYBRID "Build for a MiSTer hybrid core (software renderer, SDL2 only)" OFF)
+
 add_subdirectory(Thirdparty/openmpt)
-add_subdirectory(SurrealGPU)
+if(NOT MISTER_HYBRID)
+	add_subdirectory(SurrealGPU)
+endif()
 add_subdirectory(SurrealWidgets)
 
 if (WIN32 OR APPLE)
@@ -1121,6 +1128,22 @@ source_group("Thirdparty\\dumb\\include\\internal" REGULAR_EXPRESSION "${CMAKE_C
 source_group("Thirdparty\\miniz" REGULAR_EXPRESSION "${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/miniz/.+")
 source_group("Thirdparty\\kissfft" REGULAR_EXPRESSION "${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/kissfft/.+")
 
+if(MISTER_HYBRID)
+	find_package(SDL2 REQUIRED)
+	list(FILTER SURREALCOMMON_SOURCES EXCLUDE REGEX "RenderDevice/(Vulkan|OpenGL)/|Audio/OpenAL/|AudioPlayer/AlsaAudioPlayer|UI/Editor/|EditorApp")
+	list(APPEND SURREALCOMMON_SOURCES
+		SurrealEngine/RenderDevice/Software/SoftwareRenderDevice.cpp
+		SurrealEngine/RenderDevice/Software/SoftwareRenderDevice.h
+		SurrealEngine/Audio/AudioPlayer/SDLAudioPlayer.cpp
+		SurrealEngine/Audio/AudioPlayer/SDLAudioPlayer.h
+		SurrealEngine/MiSTer/mister_port.c
+		SurrealEngine/MiSTer/mister_port.h
+	)
+	list(REMOVE_ITEM SURREALCOMMON_LIBS surrealgpu)
+	set(SURREALCOMMON_UNIX_LIBS SDL2::SDL2-static)
+	add_definitions(-DMISTER_HYBRID -DUSE_SDL2)
+endif()
+
 include_directories(SurrealEngine SurrealWidgets/include Thirdparty SurrealGPU/include Thirdparty/openmpt Thirdparty/openal-soft/include Thirdparty/miniz)
 
 if(NOT APPLE AND SDL2_FOUND)
@@ -1152,7 +1175,11 @@ elseif(HAIKU)
 	add_link_options(-pthread)
 else()
 	set(SURREALCOMMON_SOURCES ${SURREALCOMMON_SOURCES})
-	set(SURREALCOMMON_LIBS ${SURREALCOMMON_LIBS} ${SURREALCOMMON_UNIX_LIBS} ${CMAKE_DL_LIBS} -lasound)
+	if(MISTER_HYBRID)
+		set(SURREALCOMMON_LIBS ${SURREALCOMMON_LIBS} ${SURREALCOMMON_UNIX_LIBS} ${CMAKE_DL_LIBS})
+	else()
+		set(SURREALCOMMON_LIBS ${SURREALCOMMON_LIBS} ${SURREALCOMMON_UNIX_LIBS} ${CMAKE_DL_LIBS} -lasound)
+	endif()
 	set(THIRDPARTY_SOURCES ${THIRDPARTY_SOURCES} ${THIRDPARTY_UNIX_SOURCES})
 	add_definitions(-DUNIX -D_UNIX)
 	add_link_options(-pthread)
@@ -1167,7 +1194,11 @@ if(MSVC)
 	set_source_files_properties(${SURREALVIDEO_SOURCES} PROPERTIES COMPILE_FLAGS "/wd4244 /wd4267 /wd4005 /wd4018 /wd4101 /wd4146 /wd4334 -D_CRT_SECURE_NO_WARNINGS /experimental:c11atomics")
 endif()
 
-add_library(SurrealVideo SHARED ${SURREALVIDEO_SOURCES})
+if(MISTER_HYBRID)
+	add_library(SurrealVideo STATIC ${SURREALVIDEO_SOURCES})
+else()
+	add_library(SurrealVideo SHARED ${SURREALVIDEO_SOURCES})
+endif()
 target_include_directories(SurrealVideo PRIVATE SurrealVideo)
 set_target_properties(SurrealVideo PROPERTIES CXX_STANDARD 20)
 set_target_properties(SurrealVideo PROPERTIES C_STANDARD 17)
@@ -1180,6 +1211,12 @@ add_executable(SurrealEngine WIN32 MACOSX_BUNDLE ${SURREALENGINE_SOURCES})
 target_link_libraries(SurrealEngine SurrealCommon ${SURREALCOMMON_LIBS})
 set_target_properties(SurrealEngine PROPERTIES CXX_STANDARD 20)
 
+if(MISTER_HYBRID)
+	# the software render device on its own: no window, no game data
+	add_executable(SoftwareRenderTest Tools/SoftwareRenderTest/SoftwareRenderTest.cpp)
+	target_link_libraries(SoftwareRenderTest SurrealCommon ${SURREALCOMMON_LIBS})
+	set_target_properties(SoftwareRenderTest PROPERTIES CXX_STANDARD 20)
+else()
 add_executable(SurrealEditor WIN32 MACOSX_BUNDLE ${SURREALEDITOR_SOURCES})
 target_link_libraries(SurrealEditor SurrealCommon ${SURREALCOMMON_LIBS})
 set_target_properties(SurrealEditor PROPERTIES CXX_STANDARD 20)
@@ -1187,6 +1224,7 @@ set_target_properties(SurrealEditor PROPERTIES CXX_STANDARD 20)
 add_executable(SurrealDebugger ${SURREALDEBUGGER_SOURCES})
 target_link_libraries(SurrealDebugger SurrealCommon ${SURREALCOMMON_LIBS})
 set_target_properties(SurrealDebugger PROPERTIES CXX_STANDARD 20)
+endif()
 
 function( create_zip_source_groups FOLDER_NAME ZIP_DIR )
 	file(GLOB ZIP_SRCS ${ZIP_DIR}/*)
@@ -1243,6 +1281,16 @@ set(ZIPDIR_SOURCES
 	Thirdparty/miniz/miniz.h
 )
 
+if(CMAKE_CROSSCOMPILING)
+	# zipdir runs on the build machine: when cross compiling (the MiSTer), the
+	# pk3 of a native build is handed over instead, -DSURREAL_HOST_PK3=<file>
+	if(NOT SURREAL_HOST_PK3)
+		message(FATAL_ERROR "Cross compiling: pass -DSURREAL_HOST_PK3=<SurrealEngine.pk3 of a native build>")
+	endif()
+	configure_file(${SURREAL_HOST_PK3} ${CMAKE_BINARY_DIR}/SurrealEngine.pk3 COPYONLY)
+	return()
+endif()
+
 add_executable(zipdir ${ZIPDIR_SOURCES})
 set_target_properties(zipdir PROPERTIES CXX_STANDARD 20)
 set_target_properties(zipdir PROPERTIES C_STANDARD 17)
@@ -1255,7 +1303,9 @@ endif()
 add_zip(SurrealEngine.pk3 ${CMAKE_CURRENT_SOURCE_DIR}/Resources)
 
 add_dependencies(SurrealEngine Resources)
-add_dependencies(SurrealEditor Resources)
+if(NOT MISTER_HYBRID)
+	add_dependencies(SurrealEditor Resources)
+endif()
 
 if(WIN32)
 	add_custom_command(TARGET SurrealEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:OpenAL::OpenAL>" $<TARGET_FILE_DIR:SurrealEngine>)
@@ -1297,5 +1347,7 @@ if(MSVC)
 endif()
 
 install(TARGETS SurrealEngine RUNTIME DESTINATION bin BUNDLE DESTINATION app)
-install(TARGETS SurrealEditor RUNTIME DESTINATION bin BUNDLE DESTINATION app)
-install(TARGETS SurrealDebugger RUNTIME DESTINATION bin)
+if(NOT MISTER_HYBRID)
+	install(TARGETS SurrealEditor RUNTIME DESTINATION bin BUNDLE DESTINATION app)
+	install(TARGETS SurrealDebugger RUNTIME DESTINATION bin)
+endif()

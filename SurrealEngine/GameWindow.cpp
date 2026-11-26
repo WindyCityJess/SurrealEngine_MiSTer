@@ -3,9 +3,11 @@
 #include "GameWindow.h"
 #include "LauncherSettings.h"
 #include "RenderDevice/RenderDevice.h"
+#ifndef MISTER_HYBRID
 #include <surrealgpu/vulkansurface.h>
 #include <surrealgpu/vulkancompatibledevice.h>
 #include <surrealgpu/vulkanbuilders.h>
+#endif
 
 GameWindow::GameWindow(GameWindowHost* windowHost, RenderAPI renderAPI) : Widget(nullptr, WidgetType::Window, renderAPI), windowHost(windowHost)
 {
@@ -154,6 +156,10 @@ void GameWindow::OnLostFocus()
 
 std::unique_ptr<GameWindow> GameWindow::Create(GameWindowHost* windowHost)
 {
+#ifdef MISTER_HYBRID
+	// the software render device hands the window a bitmap
+	return std::make_unique<GameWindow>(windowHost, RenderAPI::Bitmap);
+#endif
 	RenderAPI api;
 	switch (LauncherSettings::Get().RenderDevice.Type)
 	{

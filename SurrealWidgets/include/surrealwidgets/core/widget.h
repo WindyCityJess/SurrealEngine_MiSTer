@@ -190,6 +190,8 @@ public:
 	void MakeGLContextCurrent() { Window()->DispWindow->MakeGLContextCurrent(); }
 	bool SetGLSwapInterval(int interval) { return Window()->DispWindow->SetGLSwapInterval(interval); }
 	void SwapGLBuffers() { Window()->DispWindow->SwapGLBuffers(); }
+	// A frame drawn by the program itself (a window made with RenderAPI::Bitmap)
+	void PresentBitmap(int width, int height, const uint32_t* pixels) { Window()->DispWindow->PresentBitmap(width, height, pixels); }
 	DisplayWindow::GLFuncPtr GetGLProcAddress(const char* name) { return Window()->DispWindow->GetGLProcAddress(name); }
 
 protected:

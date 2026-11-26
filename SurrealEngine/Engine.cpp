@@ -1585,6 +1585,24 @@ void Engine::OpenWindow()
 	int height = client->StartupFullscreen ? client->FullscreenViewportY : client->WindowedViewportY;
 	bool fullscreen = client->StartupFullscreen;
 
+#ifdef MISTER_HYBRID
+	// The window's size picks the core's video mode (320x200, 320x240,
+	// 640x400 and 640x480 among them). SURREAL_MISTER_MODE=<width>x<height>
+	// asks for another one than 320x240.
+	width = 320;
+	height = 240;
+	fullscreen = false;
+	if (const char* mode = std::getenv("SURREAL_MISTER_MODE"))
+	{
+		int w = 0, h = 0;
+		if (sscanf(mode, "%dx%d", &w, &h) == 2 && w >= 320 && h >= 200 && w <= 640 && h <= 480)
+		{
+			width = w;
+			height = h;
+		}
+	}
+#endif
+
 	std::string versionString = !LaunchInfo.gameVersionString.empty() ? " (v" + LaunchInfo.gameVersionString + ")" : "";
 
 	window->SetWindowTitle(LaunchInfo.gameName + versionString + " - Surreal Engine");
