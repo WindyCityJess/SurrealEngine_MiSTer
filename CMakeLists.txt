@@ -1138,6 +1138,8 @@ if(MISTER_HYBRID)
 		SurrealEngine/Audio/AudioPlayer/SDLAudioPlayer.h
 		SurrealEngine/MiSTer/mister_port.c
 		SurrealEngine/MiSTer/mister_port.h
+		SurrealEngine/MiSTer/MisterGamepad.cpp
+		SurrealEngine/MiSTer/MisterGamepad.h
 	)
 	list(REMOVE_ITEM SURREALCOMMON_LIBS surrealgpu)
 	set(SURREALCOMMON_UNIX_LIBS SDL2::SDL2-static)

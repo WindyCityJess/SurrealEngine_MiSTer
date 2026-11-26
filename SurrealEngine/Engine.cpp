@@ -1,6 +1,9 @@
 
 #include "Precomp.h"
 #include "Engine.h"
+#ifdef MISTER_HYBRID
+#include "MiSTer/MisterGamepad.h"
+#endif
 #include "Utils/File.h"
 #include "Utils/StrTools.h"
 #include "Utils/SHA1Sum.h"
@@ -1523,6 +1526,12 @@ void Engine::LoadKeybindings()
 		keybindings[keyname] = packages->GetIniValue("user", "Engine.Input", keyname);
 	}
 
+#ifdef MISTER_HYBRID
+	// The gamepad's buttons and sticks are bound by the port, not by User.ini:
+	// which button is which is changed in the MiSTer's OSD
+	MisterGamepad::SetBindings(keybindings);
+#endif
+
 	for (int i = 0; i < 40; i++)
 	{
 		std::string alias = packages->GetIniValue("user", "Engine.Input", "Aliases[" + std::to_string(i) + "]");
@@ -1634,6 +1643,10 @@ void Engine::TickWindow()
 	InputEvent(IK_MouseY, IST_Axis, 0);
 
 	GameWindow::ProcessEvents();
+
+#ifdef MISTER_HYBRID
+	MisterGamepad::Poll(this);
+#endif
 
 	if (MouseMoveX != 0 || MouseMoveY != 0)
 	{
